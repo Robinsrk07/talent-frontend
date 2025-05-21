@@ -9,6 +9,10 @@ import Faculties from './Components/Home/Faculities';
 import Teachers from './Components/Home/Teachers';
 import SubjectTeams from './Components/Home/SubjectTeams';
 import About from './Components/About/About';
+import OurFocus from './Components/OurFocus/ourFocus';
+import OurCourses from './Components/OurCourses/OurCourses';
+import Services from './Components/Services/Services';
+import Gallery from './Components/Gallery/Gallery';
 
 function App() {
 
@@ -26,6 +30,10 @@ function App() {
               <Route path='teachers' element ={<Teachers/>}/>
               <Route path='teams' element ={<SubjectTeams/>}/>   
               <Route path='aboutus' element={<About/>} />
+              <Route path='ourfocus' element={<OurFocus/>} />
+              <Route path='ourcourses' element={<OurCourses/>} />
+              <Route path='services' element={<Services/>} />
+              <Route path='gallery' element={<Gallery/>} />
         
           </Route>
 
