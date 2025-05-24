@@ -1,13 +1,28 @@
-import { HomeIcon, UserIcon, BriefcaseIcon, CogIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/outline';
-import Logo from "../../assets/Logo-dark.png";
+import { useState, useEffect } from 'react';
+import { Link, Outlet } from 'react-router-dom';
 import Logo1 from "../../assets/logo-white.png";
-import { useState } from 'react';
-import { Link, Outlet } from 'react-router-dom'; // Updated import for react-router-dom
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const Dashboard = () => {
   const [openSections, setOpenSections] = useState({
     home: false,
   });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile view on component mount and resize
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
@@ -16,10 +31,35 @@ const Dashboard = () => {
     }));
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar: Fixed, takes 20% of viewport width */}
-      <div className="bg-[#AE89FF] w-full md:w-[20vw] h-screen fixed top-0 left-0 overflow-y-auto rounded-lg border border-gray-200">
+      {/* Mobile toggle button */}
+      <button
+        onClick={toggleSidebar}
+        className="md:hidden fixed top-4 left-4 z-50 bg-[#AE89FF] p-2 rounded-md text-white"
+      >
+        {sidebarOpen ? (
+          <XMarkIcon className="h-6 w-6" />
+        ) : (
+          <Bars3Icon className="h-6 w-6" />
+        )}
+      </button>
+
+      {/* Sidebar */}
+      <div
+        className={`bg-[#AE89FF] w-[80vw] md:w-[20vw] h-screen fixed top-0 left-0 overflow-y-auto rounded-lg border border-gray-200 transition-transform duration-300 ease-in-out z-40
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      >
         <div className="w-full h-[20vh] p-8 flex items-center space-x-4">
           <img className="w-50 h-25" src={Logo1} alt="Talent Logo" />
         </div>
@@ -50,27 +90,42 @@ const Dashboard = () => {
 
           {openSections.home && (
             <ul className="text-white">
-              <li style={{ paddingLeft: '70px', paddingTop: '13px' }}>
+              <li 
+                style={{ paddingLeft: '70px', paddingTop: '13px' }}
+                onClick={closeSidebar}
+              >
                 <Link to="/admin/dashboard/scroll" className="hover:text-black">
                   Scroll
                 </Link>
               </li>
-              <li style={{ paddingLeft: '70px', paddingTop: '5px' }}>
+              <li 
+                style={{ paddingLeft: '70px', paddingTop: '5px' }}
+                onClick={closeSidebar}
+              >
                 <Link to="/admin/dashboard/banner" className="hover:text-black">
                   Banner
                 </Link>
               </li>
-              <li style={{ paddingLeft: '70px', paddingTop: '5px' }}>
+              <li 
+                style={{ paddingLeft: '70px', paddingTop: '5px' }}
+                onClick={closeSidebar}
+              >
                 <Link to="/admin/dashboard/faculties-main" className="hover:text-black">
                   Faculties-main
                 </Link>
               </li>
-              <li style={{ paddingLeft: '70px', paddingTop: '5px' }}>
+              <li 
+                style={{ paddingLeft: '70px', paddingTop: '5px' }}
+                onClick={closeSidebar}
+              >
                 <Link to="/admin/dashboard/teachers" className="hover:text-black">
                   Teachers
                 </Link>
               </li>
-              <li style={{ paddingLeft: '70px', paddingTop: '5px' }}>
+              <li 
+                style={{ paddingLeft: '70px', paddingTop: '5px' }}
+                onClick={closeSidebar}
+              >
                 <Link to="/admin/dashboard/teams" className="hover:text-black">
                   Teams
                 </Link>
@@ -78,9 +133,11 @@ const Dashboard = () => {
             </ul>
           )}
 
+          {/* Other menu items with closeSidebar on click */}
           <div
             className="list-none cursor-pointer flex items-center gap-3 text-gray-500 text-sm transition-all duration-300 hover:text-gray-700"
             style={{ paddingTop: '20px', paddingLeft: '36px' }}
+            onClick={closeSidebar}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +153,7 @@ const Dashboard = () => {
             </Link>
           </div>
 
-          <div
+         <div
             className="list-none cursor-pointer flex items-center gap-3 text-gray-500 text-sm transition-all duration-300 hover:text-gray-700"
             style={{ paddingTop: '20px', paddingLeft: '36px' }}
           >
@@ -164,10 +221,11 @@ const Dashboard = () => {
               <span className="text-white font-bold">Gallery</span>
             </Link>
           </div>
+
         </div>
       </div>
 
-      {/* Main Content: Offset by sidebar width and scrollable */}
+      {/* Main Content */}
       <div className="w-full md:ml-[20vw] md:w-[80vw] min-h-screen bg-white">
         <div className="w-full h-[12vh] border border-gray-200 m-2 rounded-lg shadow-md">
           {/* Header content */}

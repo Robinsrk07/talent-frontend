@@ -1,184 +1,190 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Default from "../../assets/stock.jpg";
 
+const API_BASE = "http://localhost:8000";
+
 const SubjectTeams = () => {
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [teams, setTeams] = useState([]);
+  const [title, setTitle] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  const [title, setTitle] = useState('');
-  const [errors, setErrors] = useState({
-    title: '',
-    image: ''
-  });
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [errors, setErrors] = useState({ title: "", image: "" });
+  const [editingId, setEditingId] = useState(null);
 
-  const resizeImage = (file, width = 1000, height = 750) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  // Fetch all teams on load
+  useEffect(() => {
+    fetchTeams();
+  }, []);
 
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(
-            (blob) => {
-              const resizedFile = new File([blob], file.name, { type: file.type });
-              const previewUrl = URL.createObjectURL(blob);
-              resolve({ file: resizedFile, previewUrl });
-            },
-            file.type,
-            0.8
-          );
-        };
-
-        img.onerror = (err) => reject(err);
-      };
-
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
+  const fetchTeams = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/team`, { withCredentials: true });
+      setTeams(res.data.data);
+    } catch (error) {
+      console.error("Failed to fetch teams", error);
+    }
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate image type and size
-    if (!file.type.match('image/jpeg|image/png')) {
-      setErrors(prev => ({ ...prev, image: 'Only JPEG/PNG images allowed' }));
+    if (!file.type.match("image/jpeg|image/png")) {
+      setErrors((prev) => ({ ...prev, image: "Only JPEG/PNG allowed" }));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      setErrors(prev => ({ ...prev, image: 'Image must be less than 2MB' }));
+      setErrors((prev) => ({ ...prev, image: "Image must be under 2MB" }));
       return;
     }
 
-    try {
-      const { file: resizedFile, previewUrl } = await resizeImage(file, 525, 675);
-      setImageFile(resizedFile);
-      setPreviewUrl(previewUrl);
-      setErrors(prev => ({ ...prev, image: '' }));
-    } catch (err) {
-      console.error('Image resize failed', err);
-      setErrors(prev => ({ ...prev, image: 'Failed to process image' }));
-    }
-  };
-
-  const handleTitleChange = (e) => {
-    const value = e.target.value;
-    setTitle(value);
-    if (errors.title) {
-      setErrors(prev => ({ ...prev, title: '' }));
-    }
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setErrors((prev) => ({ ...prev, image: "" }));
   };
 
   const validateForm = () => {
-    let isValid = true;
-    const newErrors = { title: '', image: '' };
-
+    let valid = true;
+    const newErrors = { title: "", image: "" };
     if (!title.trim()) {
-      newErrors.title = 'Title is required';
-      isValid = false;
-    } else if (title.length > 100) {
-      newErrors.title = 'Title must be less than 100 characters';
-      isValid = false;
+      newErrors.title = "Title is required";
+      valid = false;
     }
-
-    if (!imageFile) {
-      newErrors.image = 'Image is required';
-      isValid = false;
+    if (!editingId && !imageFile) {
+      newErrors.image = "Image is required";
+      valid = false;
     }
-
     setErrors(newErrors);
-    return isValid;
+    return valid;
   };
 
-  const handleUpload = async () => {
+  const resetForm = () => {
+    setTitle("");
+    setImageFile(null);
+    setPreviewUrl(null);
+    setEditingId(null);
+    const fileInput = document.querySelector("input[type='file']");
+    if (fileInput) fileInput.value = "";
+  };
+
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('image', imageFile);
+    formData.append("title", title);
+    if (imageFile) formData.append("image", imageFile);
 
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch('/api/subject-teams', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) throw new Error('Upload failed');
-      
-      const result = await response.json();
-      console.log('Success:', result);
-      alert('Subject team uploaded successfully!');
-      
-      // Reset form
-      setTitle('');
-      setPreviewUrl(null);
-      setImageFile(null);
-      const fileInput = document.querySelector('input[type="file"]');
-      if (fileInput) fileInput.value = '';
-
+      if (editingId) {
+        await axios.put(`${API_BASE}/team/${editingId}`, formData, {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } else {
+        await axios.post(`${API_BASE}/team`, formData, {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
+      fetchTeams();
+      resetForm();
     } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to upload subject team');
+      console.error("Submit failed", error);
     }
   };
 
-  // Clean up object URLs
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
+  const handleEdit = (team) => {
+    setEditingId(team.id);
+    setTitle(team.title);
+    setPreviewUrl(`${API_BASE}/uploads/${team.filename}`);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this?")) return;
+
+    try {
+      await axios.delete(`${API_BASE}/team/${id}`, { withCredentials: true });
+      fetchTeams();
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col bg-white overflow-none">
-      <div className="flex flex-col lg:flex-row w-[95%] m-2 rounded-lg border border-gray-200 bg-white p-8 gap-2">
+      <div className="w-[95%] m-2 rounded-lg border border-gray-200 bg-white p-8 gap-2 flex flex-col lg:flex-row">
+        {/* Form section */}
         <div className="flex flex-col items-center justify-center border border-gray-200 w-[300px] h-[300px] rounded-lg">
           <img
             src={previewUrl || Default}
-            alt="Teacher Preview"
+            alt="Preview"
             className="w-[250px] h-[230px] object-cover p-1 rounded"
           />
-          
           <input
             type="file"
             accept="image/jpeg,image/png"
-            className="file-input file-input-bordered m-4 text-gray-700 rounded-sm w-[80%] bg-white border border-gray-300"
+            className="file-input file-input-bordered m-4 w-[80%]"
             onChange={handleImageChange}
           />
           {errors.image && <p className="text-red-500 text-sm">{errors.image}</p>}
         </div>
-        
+
         <div className="w-full flex flex-col">
-          <label className="text-gray-500 font-semibold">Title for Subject wise Tutors</label>
-          <input 
-            className={`border rounded-sm w-full md:w-1/2 ${errors.title ? 'border-red-500' : 'border-gray-400'}`}
-            type="text"  
+          <label className="text-gray-500 font-semibold mb-1">Title for Subject Tutor</label>
+          <input
+            className={`border rounded-sm w-full md:w-1/2 p-2 ${errors.title ? "border-red-500" : "border-gray-400"}`}
+            type="text"
             value={title}
-            onChange={handleTitleChange}
-            name="title"
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setErrors((prev) => ({ ...prev, title: "" }));
+            }}
           />
           {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-          
-          <button 
-            onClick={handleUpload}
+
+          <button
+            onClick={handleSubmit}
             className="mt-4 w-full md:w-1/2 bg-[#AE89FF] text-white font-semibold py-2 rounded-sm"
           >
-            Upload
+            {editingId ? "Update" : "Upload"}
           </button>
         </div>
       </div>
+
+      {/* Display section */}
+      <div className="w-[95%] m-2 overflow-x-auto">
+  <div className="flex gap-4 w-max">
+    {teams.map((team) => (
+      <div
+        key={team.id}
+        className="min-w-[250px] border rounded p-4 flex flex-col items-center shadow-sm bg-gray-50"
+      >
+        <img
+          src={`${API_BASE}/uploads/${team.filename}`}
+          alt={team.title}
+          className="w-[200px] h-[200px] object-cover mb-2 rounded"
+        />
+        <h2 className="text-lg font-semibold mb-1">{team.title}</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleEdit(team)}
+            className="bg-blue-500 text-white px-4 py-1 rounded"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(team.id)}
+            className="bg-red-500 text-white px-4 py-1 rounded"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
     </div>
   );
 };

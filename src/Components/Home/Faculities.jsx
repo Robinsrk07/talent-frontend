@@ -1,19 +1,26 @@
 import { useRef, useState, useEffect } from "react";
 import Default from "../../assets/stock.jpg";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Faculties = () => {
   const fileInputRef = useRef(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 }); // Store original dimensions
-  const [content, setContent] = useState({
+  const [faculties, setFaculties] = useState([]);
+  const [currentFaculty, setCurrentFaculty] = useState({
+    id: null,
     title: "",
     subTitle: "",
+    file: null,
+    previewUrl: null,
+    active: false
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [errors, setErrors] = useState({
     title: "",
     subTitle: "",
-    image: "",
+    image: ""
   });
 
   // Validation constants
@@ -22,14 +29,35 @@ const Faculties = () => {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 
+  // API base URL from environment variables
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   // Cleanup preview URL to prevent memory leaks
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      if (currentFaculty.previewUrl) {
+        URL.revokeObjectURL(currentFaculty.previewUrl);
       }
     };
-  }, [previewUrl]);
+  }, [currentFaculty.previewUrl]);
+
+  // Fetch all faculties on component mount
+  useEffect(() => {
+    fetchFaculties();
+  }, []);
+
+  const fetchFaculties = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/faculty-main`,{withCredentials: true});
+      setFaculties(response.data.data);
+    } catch (error) {
+      toast.error("Failed to fetch faculty data");
+      console.error("Error fetching faculties:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const resizeImage = (file, width = 1090, height = 800) => {
     return new Promise((resolve, reject) => {
@@ -67,6 +95,9 @@ const Faculties = () => {
   };
 
   const validateInput = (name, value) => {
+    if (!value.trim()) {
+      return `${name} is required`;
+    }
     if (value.length < MIN_LENGTH) {
       return `${name} must be at least ${MIN_LENGTH} characters long`;
     }
@@ -89,75 +120,71 @@ const Faculties = () => {
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageError = validateImage(file);
-      if (imageError) {
-        setErrors((prev) => ({ ...prev, image: imageError }));
-        setPreviewUrl(null);
-        setUploadedFile(null);
-        setImageDimensions({ width: 0, height: 0 });
-        fileInputRef.current.value = "";
-        return;
-      }
+    if (!file) return;
 
-      try {
-        // Get original image dimensions
-        const img = new Image();
-        const objectUrl = URL.createObjectURL(file);
-        img.src = objectUrl;
+    const imageError = validateImage(file);
+    if (imageError) {
+      setErrors((prev) => ({ ...prev, image: imageError }));
+      resetImageState();
+      fileInputRef.current.value = "";
+      return;
+    }
 
-        await new Promise((resolve, reject) => {
-          img.onload = () => {
-            setImageDimensions({ width: img.width, height: img.height });
-            URL.revokeObjectURL(objectUrl);
-            resolve();
-          };
-          img.onerror = (err) => {
-            URL.revokeObjectURL(objectUrl);
-            reject(err);
-          };
-        });
+    try {
+      // Get original image dimensions
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.src = objectUrl;
 
-        // Resize the image
-        const { file: resizedFile, previewUrl: newPreviewUrl } = await resizeImage(file, 1090, 800);
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          setImageDimensions({ width: img.width, height: img.height });
+          URL.revokeObjectURL(objectUrl);
+          resolve();
+        };
+        img.onerror = (err) => {
+          URL.revokeObjectURL(objectUrl);
+          reject(err);
+        };
+      });
 
-        // Revoke previous URL if exists
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-        }
+      // Resize the image
+      const { file: resizedFile, previewUrl: newPreviewUrl } = await resizeImage(file);
 
-        // Set resized file and preview
-        setPreviewUrl(newPreviewUrl);
-        setUploadedFile(resizedFile);
-        setErrors((prev) => ({ ...prev, image: "" }));
-      } catch (error) {
-        setErrors((prev) => ({ ...prev, image: "Failed to process image" }));
-        setPreviewUrl(null);
-        setUploadedFile(null);
-        setImageDimensions({ width: 0, height: 0 });
-        fileInputRef.current.value = "";
-      }
-    } else {
-      setErrors((prev) => ({ ...prev, image: "Please select an image" }));
-      setPreviewUrl(null);
-      setUploadedFile(null);
-      setImageDimensions({ width: 0, height: 0 });
+      setCurrentFaculty(prev => ({
+        ...prev,
+        file: resizedFile,
+        previewUrl: newPreviewUrl
+      }));
+      setErrors((prev) => ({ ...prev, image: "" }));
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, image: "Failed to process image" }));
+      resetImageState();
       fileInputRef.current.value = "";
     }
+  };
+
+  const resetImageState = () => {
+    setCurrentFaculty(prev => ({
+      ...prev,
+      file: null,
+      previewUrl: null
+    }));
+    setImageDimensions({ width: 0, height: 0 });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setContent((prevContent) => ({
-      ...prevContent,
-      [name]: value,
+    setCurrentFaculty(prev => ({
+      ...prev,
+      [name]: value
     }));
 
     const error = validateInput(name === "title" ? "Title" : "Subtitle", value);
     setErrors((prev) => ({
       ...prev,
-      [name]: error,
+      [name]: error
     }));
   };
 
@@ -165,79 +192,131 @@ const Faculties = () => {
     fileInputRef.current.click();
   };
 
-const handleUpload = async () => {
-  const titleError = validateInput("Title", content.title);
-  const subTitleError = validateInput("Subtitle", content.subTitle);
-  const imageError = !uploadedFile ? "Please select an image" : validateImage(uploadedFile);
+  const validateForm = () => {
+    const titleError = validateInput("Title", currentFaculty.title);
+    const subTitleError = validateInput("Subtitle", currentFaculty.subTitle);
+    const imageError = isEditing && !currentFaculty.file ? "" : validateImage(currentFaculty.file);
 
-  setErrors({
-    title: titleError,
-    subTitle: subTitleError,
-    image: imageError,
-  });
-
-  if (titleError || subTitleError || imageError) {
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("title", content.title.trim());
-  formData.append("subTitle", content.subTitle.trim());
-  formData.append("photo", uploadedFile);
-
-  // Log dimensions (original and resized)
-  console.log("Form Data:", {
-    title: content.title,
-    subTitle: content.subTitle,
-    file: uploadedFile,
-    originalDimensions: `${imageDimensions.width}x${imageDimensions.height} pixels`,
-    resizedDimensions: "1090x800 pixels",
-  });
-
-  try {
-    // Make POST API call
-    const response = await fetch("https://your-api.com/update", {
-      method: "POST",
-      body: formData,
-      // Optional: Add headers if needed (e.g., for authentication)
-      // headers: {
-      //   Authorization: `Bearer ${yourToken}`,
-      // },
+    setErrors({
+      title: titleError,
+      subTitle: subTitleError,
+      image: imageError
     });
 
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
-    }
+    return !(titleError || subTitleError || imageError);
+  };
 
-    const result = await response.json();
-    console.log("API Response:", result);
-
-    // Reset form only on successful response
-    setContent({ title: "", subTitle: "" });
-    setUploadedFile(null);
-    setPreviewUrl(null);
+  const resetForm = () => {
+    setCurrentFaculty({
+      id: null,
+      title: "",
+      subTitle: "",
+      file: null,
+      previewUrl: null,
+      active: false
+    });
+    setIsEditing(false);
     setImageDimensions({ width: 0, height: 0 });
-    fileInputRef.current.value = "";
-    setErrors({ title: "", subTitle: "", image: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
-    // Optional: Show success message to user
-    alert("Update successful!");
-  } catch (error) {
-    console.error("API Error:", error.message);
-    setErrors((prev) => ({
-      ...prev,
-      image: "Failed to upload data. Please try again.",
-    }));
-  }
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+      const formData = new FormData();
+      formData.append("title", currentFaculty.title.trim());
+      formData.append("subtitle", currentFaculty.subTitle.trim());
+      formData.append("active", currentFaculty.active.toString());
+      if (currentFaculty.file) {
+        formData.append("image", currentFaculty.file);
+      }
+
+      let response;
+      if (isEditing && currentFaculty.id) {
+        response = await axios.put(
+          `${API_BASE_URL}/faculty-main/${currentFaculty.id}`,
+          formData,
+          {
+            withCredentials: true,
+          }
+        );
+        toast.success("Faculty updated successfully");
+      } else {
+        response = await axios.post(
+          `${API_BASE_URL}/faculty-main`,
+          formData,
+          {
+            withCredentials: true,
+          }
+        );
+        toast.success("Faculty created successfully");
+      }
+
+      fetchFaculties();
+      resetForm();
+    } catch (error) {
+      console.error("Error saving faculty:", error);
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} faculty`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEdit = (faculty) => {
+  setCurrentFaculty({
+    id: faculty.id,
+    title: faculty.title,
+    subTitle: faculty.subtitle,
+    file: null,
+    previewUrl: faculty.filename ? `${API_BASE_URL}/uploads/${faculty.filename}` : null,
+    active: faculty.active
+  });
+  setIsEditing(true);
+  setImageDimensions({ width: 0, height: 0 });
 };
+
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this faculty?")) {
+      try {
+        setIsLoading(true);
+        await axios.delete(`${API_BASE_URL}/faculty-main/${id}`, { withCredentials: true });
+        toast.success("Faculty deleted successfully");
+        fetchFaculties();
+      } catch (error) {
+        console.error("Error deleting faculty:", error);
+        toast.error("Failed to delete faculty");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleToggleActive = async (id) => {
+    try {
+      setIsLoading(true);
+await axios.patch(`${API_BASE_URL}/faculty-main/${id}/activate`, {}, { withCredentials: true });
+      toast.success("Active status updated");
+      fetchFaculties();
+    } catch (error) {
+      console.error("Error toggling active status:", error);
+      toast.error("Failed to update active status");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col">
       <div className="flex flex-col lg:flex-row w-full m-2 rounded-lg bg-white p-8 gap-2">
         <div className="flex flex-col items-center w-full max-w-[300px] h-[300px] border border-gray-400 rounded-lg p-2">
           <img
-            src={previewUrl || Default}
-            alt="Banner Preview"
+            src={currentFaculty.previewUrl || Default}
+            alt="Faculty Preview"
             className="w-[250px] h-[230px] object-cover rounded"
           />
 
@@ -253,8 +332,9 @@ const handleUpload = async () => {
           <button
             className="bg-[#AE89FF] w-[200px] rounded-lg font-semibold text-white m-4"
             onClick={handleButtonClick}
+            disabled={isLoading}
           >
-            Upload Image
+            {isLoading ? "Processing..." : "Upload Image"}
           </button>
 
           {errors.image && <p className="text-sm text-red-600">{errors.image}</p>}
@@ -263,21 +343,22 @@ const handleUpload = async () => {
 
         <div className="w-full min-h-[200px] bg-white">
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-            New Main Title *
+            Main Title *
           </label>
           <textarea
             id="title"
             name="title"
-            value={content.title}
+            value={currentFaculty.title}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
               errors.title ? "border-red-500" : ""
             }`}
             placeholder="Enter your Main content here (10-500 characters)..."
             onChange={handleInputChange}
             rows={3}
+            disabled={isLoading}
           />
           {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
-          <p className="mt-1 text-xs text-gray-500">{content.title.length}/{MAX_LENGTH} characters</p>
+          <p className="mt-1 text-xs text-gray-500">{currentFaculty.title.length}/{MAX_LENGTH} characters</p>
 
           <label htmlFor="subTitle" className="block text-sm font-medium text-gray-700 mb-2">
             Sub Title *
@@ -285,23 +366,51 @@ const handleUpload = async () => {
           <textarea
             id="subTitle"
             name="subTitle"
-            value={content.subTitle}
+            value={currentFaculty.subTitle}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
               errors.subTitle ? "border-red-500" : ""
             }`}
-            placeholder="Enter your Main content here (10-500 characters)..."
+            placeholder="Enter your Sub content here (10-500 characters)..."
             onChange={handleInputChange}
             rows={3}
+            disabled={isLoading}
           />
           {errors.subTitle && <p className="mt-1 text-sm text-red-600">{errors.subTitle}</p>}
-          <p className="mt-1 text-xs text-gray-500">{content.subTitle.length}/{MAX_LENGTH} characters</p>
+          <p className="mt-1 text-xs text-gray-500">{currentFaculty.subTitle.length}/{MAX_LENGTH} characters</p>
 
-          <div className="flex justify-end mt-4">
+          <div className="flex items-center mt-2">
+            <input
+              type="checkbox"
+              id="active"
+              checked={currentFaculty.active}
+              onChange={(e) => setCurrentFaculty(prev => ({
+                ...prev,
+                active: e.target.checked
+              }))}
+              className="mr-2"
+              disabled={isLoading}
+            />
+            <label htmlFor="active" className="text-sm text-gray-700">
+              Make this the active faculty
+            </label>
+          </div>
+
+          <div className="flex justify-end mt-4 space-x-2">
+            {isEditing && (
+              <button
+                className="bg-gray-500 hover:bg-gray-600 transition-colors duration-200 px-6 py-2 text-white rounded-lg font-semibold"
+                onClick={resetForm}
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+            )}
             <button
               className="bg-[#6C63FF] hover:bg-[#5A52d4] transition-colors duration-200 px-6 py-2 text-white rounded-lg font-semibold"
-              onClick={handleUpload}
+              onClick={handleSubmit}
+              disabled={isLoading}
             >
-              Upload data
+              {isLoading ? "Processing..." : isEditing ? "Update Faculty" : "Add Faculty"}
             </button>
           </div>
         </div>
@@ -312,37 +421,73 @@ const handleUpload = async () => {
           <thead>
             <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
               <th className="px-4 py-2 border-b w-[200px]">Image</th>
-              <th className="px-4 py-2 border-b w-[600px]">Title</th>
+              <th className="px-4 py-2 border-b w-[400px]">Title</th>
+              <th className="px-4 py-2 border-b w-[100px]">Status</th>
               <th className="px-4 py-2 border-b text-center w-[250px]">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="hover:bg-gray-50 text-sm text-gray-700">
-              <td className="px-4 py-2 border-b">
-                <img src={previewUrl || Default} alt="Banner" className="w-20 h-14 object-cover rounded" />
-              </td>
-              <td className="px-4 py-2 border-b break-words whitespace-normal max-w-[600px]">
-                {content.title || <span className="text-gray-400 italic">No title</span>}
-              </td>
-              <td className="px-4 py-2 border-b text-center space-x-2">
-                <button
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                  onClick={() => {
-                    alert("Edit clicked");
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
-                  onClick={() => {
-                    alert("Delete clicked");
-                  }}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
+            {isLoading && faculties.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="px-4 py-4 text-center">
+                  Loading faculties...
+                </td>
+              </tr>
+            ) : faculties.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="px-4 py-4 text-center">
+                  No faculties found
+                </td>
+              </tr>
+            ) : (
+              faculties.map((faculty) => (
+                <tr key={faculty.id} className="hover:bg-gray-50 text-sm text-gray-700">
+                  <td className="px-4 py-2 border-b">
+                    <img 
+                      src={faculty.filename ? `${API_BASE_URL}/uploads/${faculty.filename}` : Default} 
+                      alt="Faculty" 
+                      className="w-20 h-14 object-cover rounded" 
+                    />
+                  </td>
+                  <td className="px-4 py-2 border-b break-words whitespace-normal max-w-[400px]">
+                    <div className="font-medium">{faculty.title}</div>
+                    <div className="text-gray-500 text-sm">{faculty.subtitle}</div>
+                  </td>
+                  <td className="px-4 py-2 border-b">
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      faculty.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {faculty.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 border-b text-center space-x-2">
+                    {!faculty.active && (
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
+                        onClick={() => handleToggleActive(faculty.id)}
+                        disabled={isLoading}
+                      >
+                        Set Active
+                      </button>
+                    )}
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                      onClick={() => handleEdit(faculty)}
+                      disabled={isLoading}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                      onClick={() => handleDelete(faculty.id)}
+                      disabled={isLoading}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
