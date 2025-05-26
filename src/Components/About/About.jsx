@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import Default from "../../assets/stock.jpg";
 
 
 const About = () => {
@@ -46,9 +47,7 @@ const About = () => {
   useEffect(() => {
    const fetchAboutData = async () => {
   try {
-    const response = await axios.get(`${VITE_API_BASE_URL}/about`, {
-      withCredentials: true
-    });
+    const response = await axios.get(`${VITE_API_BASE_URL}/about`);
 
     const data = response.data;
     console.log(data);
@@ -273,7 +272,7 @@ const About = () => {
           <label className="text-gray-500 font-semibold mt-2">Top Banner (1090x400)</label>
           <img
             src={images.topBanner.preview || 
-                 (images.topBanner.existing ? `${VITE_API_BASE_URL}/uploads/${images.topBanner.existing}` : "default-banner-placeholder.jpg")}
+                 (images.topBanner.existing ? `${VITE_API_BASE_URL}/uploads/${images.topBanner.existing}` : Default)}
             alt="Top Banner"
             className="w-[250px] h-[230px] object-cover p-1 rounded"
           />
@@ -307,7 +306,7 @@ const About = () => {
           <label className="text-gray-500 font-semibold mt-2">Image1 (525x675)</label>
           <img
             src={images.image1.preview || 
-                 (images.image1.existing ? `${VITE_API_BASE_URL}/uploads/${images.image1.existing}` : "default-image1-placeholder.jpg")}
+                 (images.image1.existing ? `${VITE_API_BASE_URL}/uploads/${images.image1.existing}` : Default)}
             alt="Image 1"
             className="w-[250px] h-[230px] object-cover p-1 rounded"
           />
@@ -341,7 +340,7 @@ const About = () => {
           <label className="text-gray-500 font-semibold mt-2">Image2 (525x675)</label>
           <img
             src={images.image2.preview || 
-                 (images.image2.existing ? `${VITE_API_BASE_URL}/uploads/${images.image2.existing}` : "default-image2-placeholder.jpg")}
+                 (images.image2.existing ? `${VITE_API_BASE_URL}/uploads/${images.image2.existing}` :Default)}
             alt="Image 2"
             className="w-[250px] h-[230px] object-cover p-1 rounded"
           />

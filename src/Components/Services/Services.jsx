@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import Default from "../../assets/stock.jpg";
+
 
 const Services = () => {
   // State for services section
@@ -13,6 +15,9 @@ const Services = () => {
     image: null,
     previewImage: ''
   });
+console.log(serviceForm);
+
+
   const [isEditingService, setIsEditingService] = useState(false);
 
   // State for features section
@@ -34,6 +39,8 @@ const Services = () => {
     try {
       const response = await axios.get(`${VITE_API_BASE_URL}/services`,{withCredentials: true});
       setServices(response.data);
+            console.log(response.data);
+
     } catch (error) {
       toast.error('Failed to fetch services');
       console.error('Error fetching services:', error);
@@ -44,6 +51,8 @@ const Services = () => {
     try {
       const response = await axios.get(`${VITE_API_BASE_URL}/features`,{withCredentials: true});
       setFeatures(response.data);
+      console.log(response.data);
+      
     } catch (error) {
       toast.error('Failed to fetch features');
       console.error('Error fetching features:', error);
@@ -233,7 +242,7 @@ const Services = () => {
         <div className="flex flex-col m-4 border border-gray-200 w-full md:w-[300px] h-[300px] rounded-lg">
           <label className="text-gray-500 font-semibold mt-2">Services Image (1090x400)</label>
           <img
-            src={serviceForm.previewImage || "default-banner-placeholder.jpg"}
+            src={serviceForm.previewImage || Default}
             alt="Service Preview"
             className="w-full h-[230px] object-cover p-1 rounded"
           />
@@ -301,7 +310,7 @@ const Services = () => {
             {services.map((service) => (
               <div key={service.id} className="border border-gray-200 rounded-lg p-4">
                 <img
-                  src={`/uploads/${service.image}`}
+                  src={`${VITE_API_BASE_URL}/uploads/${service.image}`}
                   alt={service.heading}
                   className="w-full h-40 object-cover rounded mb-3"
                 />

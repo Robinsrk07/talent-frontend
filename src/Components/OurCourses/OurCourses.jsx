@@ -1,13 +1,15 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Default from "../../assets/stock.jpg";
+
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const OurCourses = () => {
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCourseId, setCurrentCourseId] = useState(null);
@@ -275,9 +277,9 @@ const OurCourses = () => {
             src={
               formData.imagePreview ||
               formData.image ||
-              "default-banner-placeholder.jpg"
+              Default
             }
-            alt="Course Banner"
+            alt="Course BaDefaultnner"
             className="w-[250px] h-[230px] object-cover p-1 rounded"
           />
           <input

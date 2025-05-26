@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Default from "../../assets/stock.jpg";
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -133,7 +134,7 @@ const OurFocus = () => {
       <div className="flex flex-col lg:flex-row border rounded-lg shadow-lg p-4 mb-8 gap-6">
         <div className="flex flex-col border w-full lg:w-[300px] rounded-lg items-center p-2">
           <label className="text-gray-500 font-semibold mb-2">Top Banner (1090x400)</label>
-          <img src={metaPreview || '/default-banner-placeholder.jpg'} alt="Top Banner" className="w-full h-48 object-cover rounded" />
+          <img src={metaPreview || Default} alt="Top Banner" className="w-full h-48 object-cover rounded" />
           <input
             type="file"
             accept="image/*"
