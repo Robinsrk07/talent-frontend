@@ -55,15 +55,12 @@ const ServicesClient = () => {
     <div className="w-full bg-gray-100 py-12 px-4">
       {/* Services Section */}
       <section className="mb-20">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-12">
-          Our Services
-        </h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+       
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-[80%] mx-auto">
           {services.map((service) => (
             <div
               key={service.id}
-              className="bg-white shadow-lg rounded-lg overflow-hidden"
+              className="bg-white shadow-lg overflow-hidden"
             >
               <img
                 src={`${VITE_API_BASE_URL}/uploads/${service.image}`}
@@ -82,16 +79,31 @@ const ServicesClient = () => {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-12 px-4 rounded-lg shadow-md max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
-          Our Features
+      <section className="bg-gray-200   shadow-md w-full ">
+        <h1 className="text-6xl font-bold text-center text-gray-800 m-10">
+        OUR FEATURES
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-16 p-12">
           {features.map((feature) => (
             <div key={feature.id} className="flex items-start space-x-4">
               <div className="mt-1 text-blue-600 text-lg">●</div>
               <p className="text-gray-700">{feature.title}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="bg-gray-200   shadow-md w-full ">
+        <h1 className="text-6xl font-bold text-center text-gray-800 m-10">
+        OUR PROGRAMS
+        </h1>
+
+        <div className=" flex flex-col p-12 gap-8">
+          {ourPrograms.map((program) => (
+            <div key={program.id} >
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">{program.heading}</h1>
+              <h3 className="text-xl font-semibold text-gray-800 mb-3" >{program.subheading}</h3>
+              <p className="text-gray-700">{program.description}</p>
             </div>
           ))}
         </div>

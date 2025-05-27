@@ -19,7 +19,12 @@ import AboutClient from './Components/ClientPages/AboutClient';
 import Focus from './Components/ClientPages/Focus';
 import Courses from './Components/ClientPages/Courses';
 import ServicesClient from './Components/ClientPages/ServicesClient';
-
+import  GalleryClient  from './Components/ClientPages/GalleryClient';
+import Result from './Components/ClientPages/Result';
+import ConnectUs from './Components/ClientPages/ConnectUs';
+import StudentLogin from './Components/ClientPages/StudentLogin';
+import HomePage from './Components/ClientPages/homePage';
+import Students from './Components/Students/Students';
 function App() {
 
   return (
@@ -28,10 +33,15 @@ function App() {
      <BrowserRouter>
           <Routes>
           <Route path='/' element={<Body/>} >
+             <Route path='/' element={<HomePage/>} />
              <Route path='about' element={<AboutClient/>} />
              <Route path='focus' element={<Focus/>} />
              <Route path='courses' element={<Courses/>} />
              <Route path='services' element={<ServicesClient/>} />
+             <Route path='gallery' element={<GalleryClient/>} />
+             <Route path='result' element={<Result/>} />
+             <Route path='contact' element={<ConnectUs/>} />
+             <Route path='online-class' element={<StudentLogin/>} />
 
           </Route>
           <Route path='/admin/login' element={<LoginPage/>}/>
@@ -48,6 +58,7 @@ function App() {
               <Route path='services' element={<Services/>} />
               <Route path='gallery' element={<Gallery/>} />
               <Route path='results' element={<Results/>} />
+              <Route path='students' element={<Students/>} />
         
           </Route>
 

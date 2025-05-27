@@ -25,10 +25,10 @@ const Focus = () => {
         {focusData.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col md:flex-row bg-white border border-gray-300 shadow-lg rounded-lg overflow-hidden"
+            className="flex flex-col md:flex-row bg-white  shadow-lg  overflow-hidden"
           >
             {/* Image (Top on mobile, Left on desktop) */}
-            <div className="w-full md:w-1/2 h-48 md:h-auto">
+            <div className="w-full md:w-1/2 h-48 md:h-[60vh]">
               <img
                 src={`${VITE_API_BASE_URL}/uploads/${item.image}`}
                 alt={item.heading}
@@ -38,10 +38,9 @@ const Focus = () => {
 
             {/* Text (Below on mobile, Right on desktop) */}
             <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
-              <h2 className="text-2xl font-semibold mb-2">{item.heading}</h2>
-              <h3 className="text-lg text-gray-700 mb-4">{item.subHeading}</h3>
-              <p className="text-gray-600">{item.description}</p>
-            </div>
+              <h2 className="text-5xl font-bold  mb-2">{item.heading}</h2>
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">{item.subHeading}</h3>
+              <p className="text-gray-600 text-[10px]">{item.description}</p>            </div>
           </div>
         ))}
       </div>
