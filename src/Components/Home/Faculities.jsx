@@ -16,7 +16,6 @@ const Faculties = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [errors, setErrors] = useState({
     title: "",
     subTitle: "",
@@ -59,41 +58,6 @@ const Faculties = () => {
     }
   };
 
-  const resizeImage = (file, width = 1090, height = 800) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob(
-            (blob) => {
-              const resizedFile = new File([blob], file.name, { type: file.type });
-              const previewUrl = URL.createObjectURL(blob);
-              resolve({ file: resizedFile, previewUrl });
-            },
-            file.type,
-            0.8
-          );
-        };
-
-        img.onerror = (err) => reject(err);
-      };
-
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
-  };
-
   const validateInput = (name, value) => {
     if (!value.trim()) {
       return `${name} is required`;
@@ -131,30 +95,11 @@ const Faculties = () => {
     }
 
     try {
-      // Get original image dimensions
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      img.src = objectUrl;
-
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          setImageDimensions({ width: img.width, height: img.height });
-          URL.revokeObjectURL(objectUrl);
-          resolve();
-        };
-        img.onerror = (err) => {
-          URL.revokeObjectURL(objectUrl);
-          reject(err);
-        };
-      });
-
-      // Resize the image
-      const { file: resizedFile, previewUrl: newPreviewUrl } = await resizeImage(file);
-
+      const previewUrl = URL.createObjectURL(file);
       setCurrentFaculty(prev => ({
         ...prev,
-        file: resizedFile,
-        previewUrl: newPreviewUrl
+        file,
+        previewUrl
       }));
       setErrors((prev) => ({ ...prev, image: "" }));
     } catch (error) {
@@ -170,7 +115,6 @@ const Faculties = () => {
       file: null,
       previewUrl: null
     }));
-    setImageDimensions({ width: 0, height: 0 });
   };
 
   const handleInputChange = (e) => {
@@ -216,7 +160,6 @@ const Faculties = () => {
       active: false
     });
     setIsEditing(false);
-    setImageDimensions({ width: 0, height: 0 });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -267,18 +210,16 @@ const Faculties = () => {
   };
 
   const handleEdit = (faculty) => {
-  setCurrentFaculty({
-    id: faculty.id,
-    title: faculty.title,
-    subTitle: faculty.subtitle,
-    file: null,
-    previewUrl: faculty.filename ? `${API_BASE_URL}/uploads/${faculty.filename}` : null,
-    active: faculty.active
-  });
-  setIsEditing(true);
-  setImageDimensions({ width: 0, height: 0 });
-};
-
+    setCurrentFaculty({
+      id: faculty.id,
+      title: faculty.title,
+      subTitle: faculty.subtitle,
+      file: null,
+      previewUrl: faculty.filename ? `${API_BASE_URL}/uploads/${faculty.filename}` : null,
+      active: faculty.active
+    });
+    setIsEditing(true);
+  };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this faculty?")) {
@@ -299,7 +240,7 @@ const Faculties = () => {
   const handleToggleActive = async (id) => {
     try {
       setIsLoading(true);
-await axios.patch(`${API_BASE_URL}/faculty-main/${id}/activate`, {}, { withCredentials: true });
+      await axios.patch(`${API_BASE_URL}/faculty-main/${id}/activate`, {}, { withCredentials: true });
       toast.success("Active status updated");
       fetchFaculties();
     } catch (error) {
@@ -338,7 +279,6 @@ await axios.patch(`${API_BASE_URL}/faculty-main/${id}/activate`, {}, { withCrede
           </button>
 
           {errors.image && <p className="text-sm text-red-600">{errors.image}</p>}
-          <p>Images are converted to 1090*800 px</p>
         </div>
 
         <div className="w-full min-h-[200px] bg-white">

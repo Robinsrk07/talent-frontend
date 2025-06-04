@@ -2,21 +2,19 @@ import { useRef, useState, useEffect } from "react";
 import Default from "../../assets/stock.jpg";
 import axios from "axios";
 import { toast } from "react-toastify";
-const BASE_URL = import.meta.env.VITE_API_BASE_URL; // backend base URL
-
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Banner = () => {
   const [banners, setBanners] = useState([]);
   const [banner, setBanner] = useState({
     title: "",
     image: "",
-    file: null, // for resized image
+    file: null,
     active: true
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentBannerId, setCurrentBannerId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  console.log(banners);
   
   const [errors, setErrors] = useState({
     title: ""
@@ -24,7 +22,6 @@ const Banner = () => {
 
   const fileInputRef = useRef(null);
 
-  // Fetch all banners on component mount
   useEffect(() => {
     fetchBanners();
   }, []);
@@ -32,7 +29,7 @@ const Banner = () => {
   const fetchBanners = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/allbanners`);
+      const response = await axios.get(`${BASE_URL}/allbanners`);
       setBanners(response.data);
     } catch (error) {
       toast.error("Failed to fetch banners");
@@ -42,52 +39,15 @@ const Banner = () => {
     }
   };
 
-  const resizeImage = (file, width = 1920, height = 600) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          canvas.toBlob((blob) => {
-            const resizedFile = new File([blob], file.name, { type: file.type });
-            const previewUrl = URL.createObjectURL(blob);
-            resolve({ file: resizedFile, previewUrl });
-          }, file.type);
-        };
-
-        img.onerror = (err) => reject(err);
-      };
-
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      try {
-        const { file: resizedFile, previewUrl } = await resizeImage(file, 1920, 600);
-
-        setBanner((prev) => ({
-          ...prev,
-          image: previewUrl, // for preview
-          file: resizedFile  // actual file to upload if needed later
-        }));
-      } catch (error) {
-        console.error("Image resizing failed", error);
-        toast.error("Failed to process image");
-      }
+      const previewUrl = URL.createObjectURL(file);
+      setBanner(prev => ({
+        ...prev,
+        image: previewUrl,
+        file: file
+      }));
     }
   };
 
@@ -143,14 +103,12 @@ const Banner = () => {
 
       let response;
       if (isEditing && currentBannerId) {
-        // Update existing banner
-        response = await axios.put(`${import.meta.env.VITE_API_BASE_URL}/banner/${currentBannerId}`, formData, {
+        response = await axios.put(`${BASE_URL}/banner/${currentBannerId}`, formData, {
           withCredentials: true,
         });
         toast.success("Banner updated successfully");
       } else {
-        // Create new banner
-        response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/upload-image`, formData, {
+        response = await axios.post(`${BASE_URL}/upload-image`, formData, {
           withCredentials: true,
         });
         toast.success("Banner created successfully");
@@ -169,7 +127,7 @@ const Banner = () => {
   const handleEdit = (bannerItem) => {
     setBanner({
       title: bannerItem.title,
-      image: bannerItem.filename ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${bannerItem.filename}` : "",
+      image: bannerItem.filename ? `${BASE_URL}/uploads/${bannerItem.filename}` : "",
       file: null,
       active: bannerItem.active
     });
@@ -181,7 +139,7 @@ const Banner = () => {
     if (window.confirm("Are you sure you want to delete this banner?")) {
       try {
         setIsLoading(true);
-        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/banner/${id}`,{withCredentials: true});
+        await axios.delete(`${BASE_URL}/banner/${id}`, { withCredentials: true });
         toast.success("Banner deleted successfully");
         fetchBanners();
       } catch (error) {
@@ -198,11 +156,10 @@ const Banner = () => {
       <div className="flex flex-col lg:flex-row w-full m-2 rounded-lg bg-white p-8 gap-2">
         <div className="flex flex-col items-center w-full max-w-[300px] h-[300px] border border-gray-400 rounded-lg p-2">
           <img
-         src={banner.image || Default}            
+            src={banner.image || Default}
             alt="Banner"
             className="w-[250px] h-[230px] object-cover rounded"
           />
-
           
           <input
             type="file"
@@ -219,7 +176,6 @@ const Banner = () => {
           >
             {isLoading ? "Processing..." : "Upload Image"}
           </button>
-          <p>Images are converted to 1920*600 px</p>
         </div>
 
         <div className="w-full min-h-[200px] bg-white">
@@ -306,7 +262,7 @@ const Banner = () => {
                 <tr key={bannerItem.id} className="hover:bg-gray-50 text-sm text-gray-700">
                   <td className="px-4 py-2 border-b">
                     <img 
-                     src={bannerItem.filename ? `${BASE_URL}/uploads/${bannerItem.filename}` : Default}            
+                      src={bannerItem.filename ? `${BASE_URL}/uploads/${bannerItem.filename}` : Default}
                       alt="Banner" 
                       className="w-20 h-14 object-cover rounded" 
                     />

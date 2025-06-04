@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:8000'; // adjust to your backend domain
+const API = import.meta.env.VITE_API_BASE_URL; // adjust to your backend domain
 
 const Gallery = () => {
   const [gallery, setGallery] = useState([]);
@@ -91,7 +91,7 @@ const Gallery = () => {
             <input
               type="file"
               ref={(el) => (fileRefs.current[item.id] = el)}
-              className="file-input file-input-sm w-full text-gray-700 mb-2"
+              className="file-input file-input-sm w-full border rounded-lg border-gray-300 text-gray-700 mb-2"
             />
             <div className="flex gap-2">
               <button

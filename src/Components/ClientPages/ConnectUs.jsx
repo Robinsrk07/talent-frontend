@@ -215,12 +215,7 @@ const ConnectUs = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-blue-500">
-          <div className="text-blue-200 text-sm">
-            <div className="font-medium">Activate Windows</div>
-            <div className="text-xs mt-1">Go to Settings to activate Windows.</div>
-          </div>
-        </div>
+       
       </div>
     </div>
   );

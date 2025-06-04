@@ -142,14 +142,14 @@ const OurFocus = () => {
               setMetaFile(e.target.files[0]);
               setMetaPreview(URL.createObjectURL(e.target.files[0]));
             }}
-            className="file-input file-input-bordered mt-4 w-full"
+            className="file-input file-input-bordered border border-gray-200 rounded-lg bg-blue-200 mt-4 w-full"
           />
         </div>
         <div className="flex-1 flex flex-col">
           <label className="text-sm font-semibold text-gray-500 mb-1">Title Main</label>
           <input
             type="text"
-            className="border p-2 rounded-md mb-4"
+            className="border  p-2 rounded-md mb-4"
             value={meta.title}
             onChange={(e) => setMeta({ ...meta, title: e.target.value })}
           />
@@ -167,7 +167,7 @@ const OurFocus = () => {
           <input placeholder="Heading" value={newItem.heading} onChange={(e) => setNewItem({ ...newItem, heading: e.target.value })} className="border p-2 rounded" />
           <input placeholder="Sub Heading" value={newItem.subHeading} onChange={(e) => setNewItem({ ...newItem, subHeading: e.target.value })} className="border p-2 rounded" />
           <textarea placeholder="Description" value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} className="border p-2 rounded md:col-span-2" />
-          <input type="file" accept="image/*" onChange={(e) => {
+          <input type="file" className='border border-gray-200 rounded-lg bg-blue-200 w-1/2' accept="image/*" onChange={(e) => {
             setNewItem({ ...newItem, image: e.target.files[0] });
             setImagePreview(URL.createObjectURL(e.target.files[0]));
           }} />

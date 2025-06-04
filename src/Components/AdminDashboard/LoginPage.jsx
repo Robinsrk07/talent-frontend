@@ -2,7 +2,7 @@ import { useState } from "react";
 import Logo from "../../assets/Logo-dark.png"
 import  image1 from "../../assets/image1.png"
 import  image2 from "../../assets/image2.svg"
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 import axios from 'axios'
@@ -34,11 +34,9 @@ const [errorMessage,setErrorMesage] =useState(false)
     console.log('Login success:', data);
 
     // If backend returns a token or user info, store it
-    
-
     // Redirect after login
-    navigate('/admin/dashboard'); // change to your actual route
-
+   navigate('/admin/dashboard/scroll', { replace: true });
+  
   } catch (error) {
 
     setErrorMesage(true)
@@ -78,7 +76,7 @@ const [errorMessage,setErrorMesage] =useState(false)
       </div>   
        
 
-         <h5 className="font-light text-gray-600 mt-2">Please sign-in to your account and start the <br></br> adventure</h5>
+         <h5 className="font-light text-gray-600 mt-2">Please sign-in to your account</h5>
           <div
         className={`transition-all w-full  duration-500  ease-in-out transform ${
           errorMessage
@@ -141,9 +139,8 @@ const [errorMessage,setErrorMesage] =useState(false)
 
             <div className=" flex justify-center items-center text-sm text-gray-700 mt-6 ">
             New on our platform?{" "}
-            <a href="#" className="text-purple-600 hover:underline font-medium">
-                Create an account
-            </a>
+            
+            <Link to='/admin/signup' className="text-purple-600 hover:underline font-medium">Create an account</Link>
             </div>
       </div>
     </div>

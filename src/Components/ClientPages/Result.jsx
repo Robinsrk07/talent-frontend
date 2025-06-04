@@ -24,7 +24,7 @@ const Result = () => {
   return (
     <div className="px-4 md:px-8 py-6">
       
-      <div className="space-y-8">
+      <div className="space-y-0">
         {reversed.map((item) => (
           <div key={item.id} className="w-full p-8">
             {item.title && (

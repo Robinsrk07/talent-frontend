@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Default from "../../assets/stock.jpg";
-
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE_URL
 
 const SubjectTeams = () => {
   const [teams, setTeams] = useState([]);

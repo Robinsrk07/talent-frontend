@@ -21,20 +21,20 @@ const Courses = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <div className="min-h-screen bg-gray-50 flex justify-center px-4 py-4 md:px-20 py-20 ">
       {/* Grid container for 2 cards per row on large screens */}
-      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="w-full   grid grid-cols-1 md:grid-cols-2 gap-6">
         {courses.map((course) => (
           <div
             key={course.id}
             className="flex flex-col md:flex-row bg-white  shadow-lg  overflow-hidden"
           >
             {/* Image (Top on mobile, Left on desktop) */}
-            <div className="w-full md:w-1/2 h-48 md:h-[60vh]">
+            <div className="w-full md:w-1/2  md:h-[60vh]">
               <img
                 src={`${VITE_API_BASE_URL}/uploads/${course.image}`}
                 alt={course.heading}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-fill"
               />
             </div>
 

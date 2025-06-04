@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:8000';
+const API = import.meta.env.VITE_API_BASE_URL;
 
 const ResultGallery = () => {
   const [results, setResults] = useState([]);
@@ -97,13 +97,13 @@ const ResultGallery = () => {
                   type="file"
                   accept="image/*"
                   ref={fileInputRef}
-                  className="file-input file-input-bordered w-full"
+                  className="file-input border  border-gray-200 file-input-bordered w-full"
                 />
                 <button
                   onClick={() =>
                     handleUpdate(item.id, fileInputRef.current.files[0], titleRef.current.value)
                   }
-                  className="btn btn-success btn-sm"
+                  className="btn border border-gray-200 rounded-lg bg-blue-300 btn-success btn-sm"
                 >
                   Save
                 </button>
@@ -150,7 +150,7 @@ const ResultGallery = () => {
 
       {/* Modal for Title Input */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
             <h2 className="text-lg font-bold mb-4">Add Result</h2>
             <input

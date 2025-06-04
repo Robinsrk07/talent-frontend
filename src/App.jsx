@@ -25,6 +25,11 @@ import ConnectUs from './Components/ClientPages/ConnectUs';
 import StudentLogin from './Components/ClientPages/StudentLogin';
 import HomePage from './Components/ClientPages/homePage';
 import Students from './Components/Students/Students';
+import PrivateRoute from './utils/PrivateRoute';
+import SignUp from './Components/AdminDashboard/SignUp';
+import RegistrationsList from './Components/ClientPages/registretionList';
+import ChangePassword from './Components/ClientPages/ChangePassword';
+import PopupManager from './Components/popUp/PopUp';
 function App() {
 
   return (
@@ -45,22 +50,27 @@ function App() {
 
           </Route>
           <Route path='/admin/login' element={<LoginPage/>}/>
+          <Route path='/admin/signup' element={<SignUp/>}/> 
 
-          <Route path='/admin/dashboard' element={<Dashboard/>} >
-              <Route path='scroll' element ={<Scroll/>}/>
-              <Route path='banner' element ={<Banner/>}/>
-              <Route path='faculties-main' element ={<Faculties/>}/>
-              <Route path='teachers' element ={<Teachers/>}/>
-              <Route path='teams' element ={<SubjectTeams/>}/>   
-              <Route path='aboutus' element={<About/>} />
-              <Route path='ourfocus' element={<OurFocus/>} />
-              <Route path='ourcourses' element={<OurCourses/>} />
-              <Route path='services' element={<Services/>} />
-              <Route path='gallery' element={<Gallery/>} />
-              <Route path='results' element={<Results/>} />
-              <Route path='students' element={<Students/>} />
-        
-          </Route>
+          <Route path='/admin' element={<PrivateRoute />}>
+              <Route path='dashboard' element={<Dashboard />}>
+              <Route path='changepassword' element={<ChangePassword />}/>
+              <Route path='scroll' element={<Scroll />} />
+              <Route path='banner' element={<Banner />} />
+              <Route path='faculties-main' element={<Faculties />} />
+              <Route path='teachers' element={<Teachers />} />
+              <Route path='teams' element={<SubjectTeams />} />
+              <Route path='aboutus' element={<About />} />
+              <Route path='ourfocus' element={<OurFocus />} />
+              <Route path='ourcourses' element={<OurCourses />} />
+              <Route path='services' element={<Services />} />
+              <Route path='gallery' element={<Gallery />} />
+              <Route path='results' element={<Results />} />
+              <Route path='students' element={<Students />} />
+              <Route path='register' element={<RegistrationsList />} />
+              <Route path='popup' element={<PopupManager />} />
+        </Route>
+</Route>
 
           
           
